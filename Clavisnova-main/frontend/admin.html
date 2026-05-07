@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Clavisnova</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .admin-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .admin-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+            background: #f8f9fa;
+            border-radius: 8px 8px 0 0;
+            padding: 0 20px;
+        }
+
+        .admin-tab {
+            padding: 15px 25px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            color: #666;
+            position: relative;
+        }
+
+        .admin-tab:hover {
+            color: #333;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .admin-tab.active {
+            color: #3498db;
+            border-bottom-color: #3498db;
+            background: white;
+        }
+
+        .admin-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #3498db;
+        }
+
+        .admin-content {
+            background: white;
+            border-radius: 0 8px 8px 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            min-height: 400px;
+        }
+
+        /* Different color themes for each tab */
+        #registrations-tab {
+            border-left: 4px solid #3498db;
+        }
+
+        #requirements-tab {
+            border-left: 4px solid #27ae60;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .data-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .data-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .delete-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            background-color: #c0392b;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .refresh-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            background-color: #2980b9;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card h3 {
+            font-size: 2.5rem;
+            margin: 0 0 5px 0;
+            font-weight: 700;
+        }
+
+        .stat-card p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        .admin-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .export-btn {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .export-btn:hover {
+            background-color: #219a52;
+        }
+
+        /* Tab content visibility */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Make Refresh and Export buttons visually identical size */
+        .admin-controls .refresh-btn,
+        .admin-controls .export-btn {
+            box-sizing: border-box;
+            width: 180px !important; /* fixed identical width */
+            min-width: 180px !important;
+            padding: 10px 0 !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .pagination-btn {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            background-color: #f8f9fa;
+        }
+
+        .pagination-btn.active {
+            background-color: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            color: #666;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <h1><a href="index.html" style="color: inherit; text-decoration: none;">Clavisnova - Admin</a></h1>
+                </div>
+                <nav class="main-nav">
+                    <ul>
+                        <li><a href="index.html" class="nav-link">← Back to Website</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="admin-container">
+            <h2>Admin Dashboard</h2>
+
+            <!-- Stats Cards -->
+            <div class="stats-container">
+                <div class="stat-card">
+                    <h3 id="total-registrations">-</h3>
+                    <p>Piano Registrations</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="total-requirements">-</h3>
+                    <p>Requirements</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="total-submissions">-</h3>
+                    <p>Total Submissions</p>
+                </div>
+            </div>
+
+            <div class="admin-controls">
+                <button class="refresh-btn" onclick="loadData()">Refresh Data</button>
+                <button class="export-btn" onclick="exportData()">Export All Data</button>
+            </div>
+
+            <div class="admin-tabs">
+                <button class="admin-tab active" onclick="switchTab('registrations')">Piano Registrations</button>
+                <button class="admin-tab" onclick="switchTab('requirements')">Requirements</button>
+                <button class="admin-tab" onclick="switchTab('contacts')">Contacts</button>
+            </div>
+
+            <div class="admin-content">
+                <div id="registrations-tab" class="tab-content active">
+                    <h3>Piano Registration Submissions</h3>
+                    <div id="registrations-loading" class="loading">Loading registrations...</div>
+                    <div id="registrations-empty" class="empty-state" style="display: none;">No registration submissions yet.</div>
+                    <table id="registrations-table" class="data-table" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Manufacturer</th>
+                                <th>Model</th>
+                                <th>Serial #</th>
+                                <th>Year</th>
+                                <th>Type</th>
+                                <th>Height</th>
+                                <th>Finish</th>
+                                <th>Condition</th>
+                                <th>Color/Wood</th>
+                                <th>City/State</th>
+                                <th>Access</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="registrations-body"></tbody>
+                    </table>
+                    <div id="registrations-pagination" class="pagination" style="display: none;"></div>
+                </div>
+
+                <div id="requirements-tab" class="tab-content">
+                    <h3>Requirements Submissions</h3>
+                    <div id="requirements-loading" class="loading">Loading requirements...</div>
+                    <div id="requirements-empty" class="empty-state" style="display: none;">No requirements submissions yet.</div>
+                    <table id="requirements-table" class="data-table" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>School Name</th>
+                                <th>Current Pianos</th>
+                                <th>Preferred Type</th>
+                                <th>Teacher Name</th>
+                                <th>Background</th>
+                                <th>Commitment</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="requirements-body"></tbody>
+                    </table>
+                    <div id="requirements-pagination" class="pagination" style="display: none;"></div>
+                </div>
+
+                <div id="contacts-tab" class="tab-content">
+                    <h3>Contact Messages</h3>
+                    <div id="contacts-loading" class="loading">Loading contacts...</div>
+                    <div id="contacts-empty" class="empty-state" style="display: none;">No contact messages yet.</div>
+                    <table id="contacts-table" class="data-table" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Message</th>
+                                <th>IP</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="contacts-body"></tbody>
+                    </table>
+                    <div id="contacts-pagination" class="pagination" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // API base used by admin page; points to backend service
+        // Expose as window.API_BASE to avoid duplicate const declarations when script.js also defines API_BASE.
+        window.API_BASE = window.API_BASE || 'https://clavisnova.onrender.com';
+
+    </script>
+    <script>
+        let currentTab = 'registrations';
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+        // Load data when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStats();
+            loadData();
+        });
+
+        function loadStats() {
+            fetch(`${API_BASE}/api/admin/stats`)
+                .then(response => response.json())
+                .then(data => {
+                    // Handle both old format (direct stats) and new format (wrapped in success)
+                    const stats = data.stats || data;
+                    document.getElementById('total-registrations').textContent = stats.registrations || 0;
+                    document.getElementById('total-requirements').textContent = stats.requirements || 0;
+                    document.getElementById('total-submissions').textContent = stats.total_submissions || 0;
+                })
+                .catch(error => {
+                    console.error('Error loading stats:', error);
+                    // Set default values on error
+                    document.getElementById('total-registrations').textContent = '0';
+                    document.getElementById('total-requirements').textContent = '0';
+                    document.getElementById('total-submissions').textContent = '0';
+                });
+        }
+
+        function switchTab(tabName) {
+            // Update active tab
+            document.querySelectorAll('.admin-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update active content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabName + '-tab').classList.add('active');
+
+            currentTab = tabName;
+            currentPage = 1; // Reset to first page when switching tabs
+            loadData();
+        }
+
+        function loadData() {
+            loadStats(); // Refresh stats
+            if (currentTab === 'registrations') {
+                loadRegistrations(currentPage);
+            } else {
+                if (currentTab === 'requirements') {
+                    loadRequirements(currentPage);
+                } else if (currentTab === 'contacts') {
+                    loadContacts(currentPage);
+                }
+            }
+        }
+
+        function loadRegistrations(page = 1) {
+            // Show loading
+            document.getElementById('registrations-loading').style.display = 'block';
+            document.getElementById('registrations-table').style.display = 'none';
+            document.getElementById('registrations-empty').style.display = 'none';
+            document.getElementById('registrations-pagination').style.display = 'none';
+
+            fetch(`${API_BASE}/api/admin/registrations?page=${page}&limit=${itemsPerPage}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('registrations-loading').style.display = 'none';
+
+                    // Handle both old format and new format
+                    const dataArray = data.data || data;
+                    const pagination = data.pagination || data;
+
+                    if (dataArray && dataArray.length > 0) {
+                        displayRegistrations(dataArray);
+                        displayPagination('registrations', pagination);
+                    } else {
+                        document.getElementById('registrations-empty').style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading registrations:', error);
+                    document.getElementById('registrations-loading').innerHTML = 'Error loading data. Please try again.';
+                });
+        }
+
+        function loadRequirements(page = 1) {
+            // Show loading
+            document.getElementById('requirements-loading').style.display = 'block';
+            document.getElementById('requirements-table').style.display = 'none';
+            document.getElementById('requirements-empty').style.display = 'none';
+            document.getElementById('requirements-pagination').style.display = 'none';
+
+            fetch(`${API_BASE}/api/admin/requirements?page=${page}&limit=${itemsPerPage}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('requirements-loading').style.display = 'none';
+
+                    // Handle both old format and new format
+                    const dataArray = data.data || data;
+                    const pagination = data.pagination || data;
+
+                    if (dataArray && dataArray.length > 0) {
+                        displayRequirements(dataArray);
+                        displayPagination('requirements', pagination);
+                    } else {
+                        document.getElementById('requirements-empty').style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading requirements:', error);
+                    document.getElementById('requirements-loading').innerHTML = 'Error loading data. Please try again.';
+                });
+        }
+
+        function displayRegistrations(registrations) {
+            const tbody = document.getElementById('registrations-body');
+            tbody.innerHTML = '';
+
+            registrations.forEach(registration => {
+                const row = document.createElement('tr');
+                const date = registration.created_at ? (function(){
+                    const s = registration.created_at;
+                    const iso = (s.includes('T') || s.endsWith('Z') || s.includes('+')) ? s : s.replace(' ', 'T') + 'Z';
+                    return new Date(iso).toLocaleString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                })() : 'N/A';
+
+                row.innerHTML = `
+                    <td>${date}</td>
+                    <td>${registration.manufacturer || ''}</td>
+                    <td>${registration.model || ''}</td>
+                    <td>${registration.serial || ''}</td>
+                    <td>${registration.year || ''}</td>
+                    <td>${registration.height || ''}</td>
+                    <td>${registration.height || ''}</td>
+                    <td>${registration.finish || ''}</td>
+                    <td>${registration.finish || ''}</td>
+                    <td>${registration.color_wood || ''}</td>
+                    <td>${registration.city_state || ''}</td>
+                    <td>${registration.access || 'N/A'}</td>
+                    <td><button class="delete-btn" onclick="deleteRegistration('${registration.id}')">Delete</button></td>
+                `;
+
+                tbody.appendChild(row);
+            });
+
+            document.getElementById('registrations-table').style.display = 'table';
+        }
+
+        function displayRequirements(requirements) {
+            const tbody = document.getElementById('requirements-body');
+            tbody.innerHTML = '';
+
+            requirements.forEach(requirement => {
+                const row = document.createElement('tr');
+                const date = requirement.created_at ? (function(){
+                    const s = requirement.created_at;
+                    const iso = (s.includes('T') || s.endsWith('Z') || s.includes('+')) ? s : s.replace(' ', 'T') + 'Z';
+                    return new Date(iso).toLocaleString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                })() : 'N/A';
+
+                row.innerHTML = `
+                    <td>${date}</td>
+                    <td>${requirement.school_name || requirement.info1 || ''}</td>
+                    <td>${requirement.current_pianos || requirement.info2 || ''}</td>
+                    <td>${requirement.preferred_type || requirement.info3 || ''}</td>
+                    <td>${requirement.teacher_name || requirement.info4 || ''}</td>
+                    <td>${requirement.background || requirement.info5 || ''}</td>
+                    <td>${requirement.commitment || requirement.info6 || ''}</td>
+                    <td><button class="delete-btn" onclick="deleteRequirement('${requirement.id}')">Delete</button></td>
+                `;
+
+                tbody.appendChild(row);
+            });
+
+            document.getElementById('requirements-table').style.display = 'table';
+        }
+
+        function deleteRegistration(id) {
+            showDeleteConfirm('registration', id);
+        }
+
+        function deleteRequirement(id) {
+            showDeleteConfirm('requirement', id);
+        }
+
+        function showDeleteConfirm(type, id) {
+            // Remove existing modal
+            const existingModal = document.querySelector('.delete-confirm-modal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+
+            // Create modal overlay
+            const modalOverlay = document.createElement('div');
+            modalOverlay.className = 'delete-confirm-modal';
+            modalOverlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.6);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+            `;
+
+            // Create modal content
+            const modalContent = document.createElement('div');
+            modalContent.className = 'delete-modal-content';
+            modalContent.style.cssText = `
+                background: white;
+                border-radius: 1rem;
+                padding: 2rem;
+                max-width: 400px;
+                text-align: center;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            `;
+
+            const typeName = type.charAt(0).toUpperCase() + type.slice(1);
+
+            modalContent.innerHTML = `
+                <div style="
+                    width: 3rem;
+                    height: 3rem;
+                    background: #ef4444;
+                    color: white;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 1.5rem;
+                    font-weight: bold;
+                    margin: 0 auto 1rem;
+                ">
+                    ⚠️
+                </div>
+                <h3 style="
+                    color: #1f2937;
+                    font-size: 1.25rem;
+                    font-weight: bold;
+                    margin-bottom: 1rem;
+                ">Confirm Deletion</h3>
+                <p style="
+                    color: #6b7280;
+                    margin-bottom: 1.5rem;
+                    line-height: 1.5;
+                ">Are you sure you want to delete this ${type}? This action cannot be undone.</p>
+                <div style="display: flex; gap: 1rem; justify-content: center;">
+                    <button onclick="closeDeleteModal()" style="
+                        background: #6b7280;
+                        color: white;
+                        padding: 0.5rem 1.5rem;
+                        border-radius: 0.5rem;
+                        border: none;
+                        cursor: pointer;
+                        font-weight: 500;
+                    ">Cancel</button>
+                    <button onclick="confirmDelete('${type}', ${id})" style="
+                        background: #ef4444;
+                        color: white;
+                        padding: 0.5rem 1.5rem;
+                        border-radius: 0.5rem;
+                        border: none;
+                        cursor: pointer;
+                        font-weight: 500;
+                    ">Delete</button>
+                </div>
+            `;
+
+            modalOverlay.appendChild(modalContent);
+            document.body.appendChild(modalOverlay);
+        }
+
+        function closeDeleteModal() {
+            const modal = document.querySelector('.delete-confirm-modal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        function confirmDelete(type, id) {
+            closeDeleteModal(); // Close the modal first
+
+            const endpoint = type === 'registration'
+                ? `${API_BASE}/api/admin/delete/registration/${id}`
+                : type === 'requirement' ? `${API_BASE}/api/admin/delete/requirement/${id}` : `${API_BASE}/api/admin/delete/contact/${id}`;
+
+            fetch(endpoint, {
+                method: 'GET'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadData(); // Refresh data and stats
+                } else {
+                    alert('Error deleting ' + type);
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting ' + type + ':', error);
+                alert('Error deleting ' + type);
+            });
+        }
+
+        function displayPagination(type, pagination) {
+            const paginationContainer = document.getElementById(type + '-pagination');
+            paginationContainer.innerHTML = '';
+
+            if (pagination.pages <= 1) {
+                return; // No pagination needed
+            }
+
+            // Previous button
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'pagination-btn';
+            prevBtn.textContent = '← Previous';
+            prevBtn.disabled = pagination.page <= 1;
+            prevBtn.onclick = () => changePage(pagination.page - 1);
+            paginationContainer.appendChild(prevBtn);
+
+            // Page numbers
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, pagination.page - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(pagination.pages, startPage + maxVisiblePages - 1);
+
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = `pagination-btn ${i === pagination.page ? 'active' : ''}`;
+                pageBtn.textContent = i;
+                pageBtn.onclick = () => changePage(i);
+                paginationContainer.appendChild(pageBtn);
+            }
+
+            // Next button
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'pagination-btn';
+            nextBtn.textContent = 'Next →';
+            nextBtn.disabled = pagination.page >= pagination.pages;
+            nextBtn.onclick = () => changePage(pagination.page + 1);
+            paginationContainer.appendChild(nextBtn);
+
+            // Page info
+            const pageInfo = document.createElement('span');
+            pageInfo.className = 'page-info';
+            pageInfo.textContent = `Page ${pagination.page} of ${pagination.pages} (${pagination.total} total)`;
+            paginationContainer.appendChild(pageInfo);
+
+            paginationContainer.style.display = 'flex';
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            loadData();
+        }
+
+        function exportData() {
+            if (confirm('This will download all data as Excel files. Continue?')) {
+                let completed = 0;
+                const total = 2;
+
+                // Export registrations
+                fetch(`${API_BASE}/api/admin/export/registrations`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Export failed');
+                        }
+                        const contentType = response.headers.get('content-type');
+                        return response.blob().then(blob => ({ blob, contentType }));
+                    })
+                    .then(({ blob, contentType }) => {
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        // Check content type to determine file extension
+                        const filename = contentType.includes('spreadsheetml') ?
+                            'piano_registrations.xlsx' : 'piano_registrations.csv';
+                        a.download = filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(url);
+                        completed++;
+                        checkComplete();
+                    })
+                    .catch(error => {
+                        console.error('Error exporting registrations:', error);
+                        alert('Error exporting piano registrations');
+                    });
+
+                // Export requirements
+                fetch(`${API_BASE}/api/admin/export/requirements`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Export failed');
+                        }
+                        const contentType = response.headers.get('content-type');
+                        return response.blob().then(blob => ({ blob, contentType }));
+                    })
+                    .then(({ blob, contentType }) => {
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        // Check content type to determine file extension
+                        const filename = contentType.includes('spreadsheetml') ?
+                            'requirements.xlsx' : 'requirements.csv';
+                        a.download = filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(url);
+                        completed++;
+                        checkComplete();
+                    })
+                    .catch(error => {
+                        console.error('Error exporting requirements:', error);
+                        alert('Error exporting requirements');
+                    });
+
+                function checkComplete() {
+                    if (completed === total) {
+                        alert('Data export completed. Check your downloads folder for Excel files.');
+                    }
+                }
+            }
+        }
+
+        /* Contacts functions */
+        function loadContacts(page = 1) {
+            document.getElementById('contacts-loading').style.display = 'block';
+            document.getElementById('contacts-table').style.display = 'none';
+            document.getElementById('contacts-empty').style.display = 'none';
+            document.getElementById('contacts-pagination').style.display = 'none';
+
+            fetch(`${API_BASE}/api/admin/contacts?page=${page}&limit=${itemsPerPage}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('contacts-loading').style.display = 'none';
+                    const dataArray = data.data || data;
+                    const pagination = data.pagination || data;
+                    if (dataArray && dataArray.length > 0) {
+                        displayContacts(dataArray);
+                        displayPagination('contacts', pagination);
+                    } else {
+                        document.getElementById('contacts-empty').style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading contacts:', error);
+                    document.getElementById('contacts-loading').innerHTML = 'Error loading data. Please try again.';
+                });
+        }
+
+        function displayContacts(contacts) {
+            const tbody = document.getElementById('contacts-body');
+            tbody.innerHTML = '';
+            contacts.forEach(c => {
+                const row = document.createElement('tr');
+                const date = c.created_at ? (function(){
+                    const s = c.created_at;
+                    const iso = (s.includes('T') || s.endsWith('Z') || s.includes('+')) ? s : s.replace(' ', 'T') + 'Z';
+                    return new Date(iso).toLocaleString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                })() : 'N/A';
+                row.innerHTML = `
+                    <td>${date}</td>
+                    <td>${c.name || ''}</td>
+                    <td>${c.email || ''}</td>
+                    <td>${(c.message || '').replace(/</g,'&lt;').slice(0,200)}</td>
+                    <td>${c.ip_address || ''}</td>
+                    <td><button class="delete-btn" onclick="deleteContact('${c.id}')">Delete</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+            document.getElementById('contacts-table').style.display = 'table';
+        }
+
+        function deleteContact(id) {
+            showDeleteConfirm('contact', id);
+        }
+</script>
+    <script src="script.js"></script>
+</body>
+</html>

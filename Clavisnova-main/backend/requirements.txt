@@ -1,0 +1,21 @@
+# 核心Web框架 - 使用Flask，完全避免pydantic问题
+flask==2.3.3
+flask-cors==4.0.0
+flask-mail==0.9.1
+werkzeug==2.3.7
+
+# 数据库 - 使用较新 1.4.x 以支持 psycopg3 方言入口
+sqlalchemy==1.4.49
+
+# 日志 - 使用内置logging模块，无需外部依赖
+
+# Excel文件处理
+openpyxl==3.1.2
+
+# 其他工具
+python-multipart==0.0.5
+python-dotenv==1.0.0
+gunicorn==20.1.0
+psycopg2-binary==2.9.11
+requests==2.31.0
+# psycopg[binary]==3.3.2  # Removed - using psycopg2-binary instead

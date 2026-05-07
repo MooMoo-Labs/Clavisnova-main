@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: clavisnova-backend
+    runtime: docker
+    repo: https://github.com/your-username/Clavisnova
+    region: singapore
+    plan: starter
+    buildCommand: "docker build -f backend/Dockerfile -t clavisnova-backend ."
+    startCommand: "gunicorn -w 4 -b 0.0.0.0:$PORT --access-logfile /app/logs/access.log --error-logfile /app/logs/error.log main:app"
+    healthCheckPath: /api/health
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: HOST
+        value: 0.0.0.0
+      - key: DEBUG
+        value: false
+      - key: LOG_LEVEL
+        value: INFO
+      - key: VERSION
+        value: 1.0.0

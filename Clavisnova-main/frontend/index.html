@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClavisNova | Empowering Music, Capturing Stage Brilliance</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FAFAFA;
+            color: #1E293B;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3, .serif-font {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .btn-gold {
+            background-color: #D97706;
+            color: #FFFFFF;
+            transition: all 0.3s ease;
+        }
+        .btn-gold:hover {
+            background-color: #B45309;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(217, 119, 6, 0.3);
+        }
+
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .feature-card {
+            background: #FFFFFF;
+            border: 1px solid #F1F5F9;
+            transition: all 0.4s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08);
+            border-color: #FDE68A;
+        }
+
+        .hide-scroll::-webkit-scrollbar { display: none; }
+
+        .success-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .success-modal-overlay.show { opacity: 1; }
+        .success-modal {
+            background: white;
+            border-radius: 12px;
+            padding: 0;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            transform: scale(0.7);
+            transition: transform 0.3s ease;
+        }
+        .success-modal-overlay.show .success-modal { transform: scale(1); }
+
+        button.loading {
+            position: relative;
+            color: transparent !important;
+        }
+        button.loading::after {
+            content: "";
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            top: 50%;
+            left: 50%;
+            margin-left: -8px;
+            margin-top: -8px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .form-message {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+            border: 1px solid;
+        }
+        .field-error {
+            color: #dc2626;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            font-weight: 500;
+        }
+        input.error, select.error, textarea.error {
+            border-color: #dc2626;
+            box-shadow: 0 0 0 1px #dc2626;
+        }
+        .focused input, .focused select, .focused textarea {
+            border-color: #D97706;
+            box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.2);
+        }
+    </style>
+</head>
+<body class="relative min-h-screen">
+
+    <nav class="fixed w-full z-50 glass-nav transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                <div class="flex items-center cursor-pointer group" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })">
+                    <span class="text-2xl font-bold tracking-tight text-slate-900 serif-font">Clavis<span class="text-amber-600 italic font-medium">Nova</span></span>
+                </div>
+                <div class="hidden md:flex items-center space-x-10 text-sm font-semibold text-slate-600">
+                    <a href="#mission" class="hover:text-amber-600 transition">Our Mission</a>
+                    <a href="#programs" class="hover:text-amber-600 transition">Programs</a>
+                    <a href="#contact" class="btn-gold px-6 py-2.5 rounded-full shadow-sm text-white hover:text-white">Contact Us</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <header class="relative pt-40 pb-32 lg:pt-52 lg:pb-48 overflow-hidden bg-slate-900 flex items-center min-h-[90vh]">
+        <div class="absolute inset-0 z-0">
+            <img src="https://images.unsplash.com/photo-1552422535-c45813c61732?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80" alt="Piano on Stage" class="w-full h-full object-cover opacity-40">
+            <div class="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/80 to-transparent"></div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
+            <div class="max-w-3xl">
+                <div class="inline-flex items-center space-x-2 bg-amber-500/20 border border-amber-500/30 rounded-full px-4 py-1.5 mb-6 backdrop-blur-sm">
+                    <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                    <span class="text-xs font-bold text-amber-300 tracking-wider uppercase">501(c)(3) Non-Profit Organization</span>
+                </div>
+
+                <h1 class="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight serif-font">
+                    Reviving Pianos.<br>
+                    <span class="italic text-amber-500 font-medium">Capturing Brilliance.</span>
+                </h1>
+
+                <p class="text-xl text-slate-300 mb-12 font-light leading-relaxed max-w-2xl">
+                    We rescue and donate pianos exclusively to under-resourced schools, and provide <strong>free</strong> professional stage recording services for student concerts in the Tri-State area.
+                </p>
+
+                <div class="flex flex-wrap gap-4">
+                    <a href="#contact" onclick="switchTab('piano', 'donate', true); return false;" class="btn-gold px-8 py-4 rounded-full font-bold text-sm flex items-center shadow-lg hover:scale-105 transition">
+                        Donate a Piano
+                    </a>
+                    <a href="#contact" onclick="switchTab('piano', 'request', true); return false;" class="bg-white text-slate-900 px-8 py-4 rounded-full font-bold text-sm hover:bg-slate-100 transition shadow-lg flex items-center">
+                        Request a Piano
+                    </a>
+                    <a href="#contact" onclick="switchTab('video', null, true); return false;" class="bg-slate-800/60 text-white border border-white/20 hover:bg-slate-700/80 px-8 py-4 rounded-full font-bold text-sm transition backdrop-blur-md flex items-center">
+                        Request Free Recording
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section id="mission" class="py-20 bg-white border-b border-slate-100 scroll-mt-24">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-6 serif-font">Our Mission</h2>
+            <p class="text-slate-600 leading-relaxed text-lg mb-4">
+                ClavisNova is a volunteer-led initiative founded by musicians and educators. We believe quality instruments should not gather dust while schools lack arts funding.
+            </p>
+            <p class="text-slate-600 leading-relaxed text-lg">
+                By moving pianos from donors to classrooms, we open doors to creativity, discipline, and joy for students—while our free concert recording program celebrates young performers across Connecticut, New Jersey, and New York.
+            </p>
+        </div>
+    </section>
+
+    <section id="programs" class="py-24 bg-white relative z-10 scroll-mt-24">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                <div class="feature-card rounded-3xl p-10 flex flex-col relative overflow-hidden">
+                    <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-6 shadow-inner text-slate-800 text-2xl border border-slate-100">
+                        <i class="fas fa-music"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-slate-900 mb-3 serif-font">Piano Donation</h3>
+                    <p class="text-slate-600 leading-relaxed mb-8 flex-1 text-sm">
+                        Universities, educational institutions, and venues frequently retire older pianos. We rescue, inspect, and donate them <strong>exclusively to under-resourced schools</strong>, so students have access to quality instruments.
+                    </p>
+                    <div class="flex gap-4 flex-wrap">
+                        <a href="#contact" onclick="switchTab('piano', 'donate', true); return false;" class="text-amber-600 font-bold text-sm hover:text-amber-700 transition">Donate &rarr;</a>
+                        <a href="#contact" onclick="switchTab('piano', 'request', true); return false;" class="text-slate-600 font-bold text-sm hover:text-slate-900 transition">Request for School &rarr;</a>
+                    </div>
+                </div>
+
+                <div class="feature-card rounded-3xl p-10 flex flex-col relative overflow-hidden bg-slate-900 text-white border-none">
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                    <div class="w-16 h-16 bg-slate-800 rounded-2xl flex items-center justify-center mb-6 shadow-inner text-amber-500 text-2xl border border-slate-700">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-3 serif-font">Free Stage Recording</h3>
+                    <p class="text-slate-400 leading-relaxed mb-8 flex-1 text-sm">
+                        Available for schools in <strong>CT, NJ, and NY</strong>. We provide professional, multi-camera, <strong>100% free</strong> recording for school concerts—because a polished stage video is one of the best gifts for young performers.
+                    </p>
+                    <div class="flex gap-4">
+                        <a href="#contact" onclick="switchTab('video', null, true); return false;" class="text-amber-500 font-bold text-sm hover:text-amber-400 transition">Invite us to your school &rarr;</a>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                <div class="bg-slate-50 rounded-2xl p-8 border border-slate-100">
+                    <div class="text-4xl font-extrabold text-amber-600 mb-2">50+</div>
+                    <div class="text-slate-500 font-medium uppercase tracking-wider text-xs">Pianos Matched</div>
+                </div>
+                <div class="bg-slate-50 rounded-2xl p-8 border border-slate-100">
+                    <div class="text-4xl font-extrabold text-amber-600 mb-2">3,000+</div>
+                    <div class="text-slate-500 font-medium uppercase tracking-wider text-xs">Students Benefited</div>
+                </div>
+                <div class="bg-slate-50 rounded-2xl p-8 border border-slate-100">
+                    <div class="text-4xl font-extrabold text-amber-600 mb-2">12</div>
+                    <div class="text-slate-500 font-medium uppercase tracking-wider text-xs">Cities Covered</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="py-24 bg-slate-50 border-t border-slate-200 scroll-mt-24">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-slate-900 mb-3 serif-font">Take Action</h2>
+                <p class="text-slate-500 text-sm">Select an option below to submit your inquiry.</p>
+            </div>
+
+            <div class="bg-white rounded-3xl shadow-lg border border-slate-100 overflow-hidden">
+                <div class="flex border-b border-slate-100 bg-slate-50/50">
+                    <button type="button" id="tab-piano" onclick="switchTab('piano')" class="flex-1 py-4 text-sm font-bold text-amber-600 border-b-2 border-amber-600 transition bg-white">
+                        Piano Form
+                    </button>
+                    <button type="button" id="tab-video" onclick="switchTab('video')" class="flex-1 py-4 text-sm font-bold text-slate-500 hover:text-slate-800 transition">
+                        Recording Form
+                    </button>
+                </div>
+
+                <div id="form-piano" class="p-8">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Inquiry Type</label>
+                        <select id="piano-inquiry-type" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-amber-500 outline-none transition text-sm font-medium text-slate-700 bg-slate-50 focus:bg-white">
+                            <option value="donate">I want to donate a retired/idle piano</option>
+                            <option value="request">I represent a school requesting a piano</option>
+                        </select>
+                    </div>
+
+                    <div id="piano-donate-wrap" class="mt-6">
+                        <form id="piano-form-donate" class="space-y-5" method="post" action="#">
+                            <p class="text-xs text-slate-500 border border-slate-100 bg-slate-50 rounded-lg p-3">Please provide piano details so our team can assess your donation.</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Manufacturer*</label>
+                                    <input type="text" name="brand" placeholder="e.g. Steinway, Yamaha" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-amber-500 outline-none text-sm bg-slate-50 focus:bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Model*</label>
+                                    <input type="text" name="model" placeholder="e.g. U1" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-amber-500 outline-none text-sm bg-slate-50 focus:bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Serial #*</label>
+                                    <input type="text" name="serial" placeholder="Inside the piano" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-amber-500 outline-none text-sm bg-slate-50 focus:bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Approx. Year</label>
+                                    <input type="number" name="year" placeholder="e.g. 1995" min="1800" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-amber-500 outline-none text-sm bg-slate-50 focus:bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Type*</label>
+                                    <select name="type" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-amber-500 outline-none text-sm bg-slate-50 focus:bg-white">
+                                        <option value="">Select</option>
+                                        <option>Upright</option>
+                                        <option>Grand</option>
+                                        <option>Digital</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Height / Length</label>
+                                    <input type="text" name="height_length" placeholder="in or cm" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-amber-500 outline-none text-sm bg-slate-50 focus:bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Condition*</label>
+                                    <select name="condition" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-amber-500 outline-none text-sm bg-slate-50 focus:bg-white">
+                                        <option value="">Select</option>
+                                        <option>Excellent - Like new</option>
+                                        <option>Good - Playable</option>
+                                        <option>Fair - Needs work</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Finish / Color (details)</label>
+                                    <input type="text" name="color_wood" placeholder="e.g. Polished Ebony" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-amber-500 outline-none text-sm bg-slate-50 focus:bg-white">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">City &amp; State*</label>
+                                <input type="text" name="city" placeholder="e.g. Manhattan, NY" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-amber-500 outline-none text-sm bg-slate-50 focus:bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Access (floor, stairs, elevator)*</label>
+                                <textarea name="access" rows="3" placeholder="e.g. 2nd floor, service elevator" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-amber-500 outline-none text-sm bg-slate-50 focus:bg-white"></textarea>
+                            </div>
+                            <button type="button" class="js-submit w-full btn-gold py-3.5 rounded-xl font-bold mt-2 shadow-md">Submit Registry</button>
+                        </form>
+                    </div>
+
+                    <div id="piano-request-wrap" class="mt-6 hidden">
+                        <form id="piano-form-request" class="space-y-5">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">School Full Name*</label>
+                                    <input type="text" name="school-name" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-amber-500 outline-none text-sm bg-slate-50 focus:bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Current # of Pianos*</label>
+                                    <input type="number" name="current-pianos" placeholder="0" min="0" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-amber-500 outline-none text-sm bg-slate-50 focus:bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Preferred Type*</label>
+                                    <select name="preferred-type" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-amber-500 outline-none text-sm bg-slate-50 focus:bg-white">
+                                        <option value="">Select</option>
+                                        <option>Upright (Space saving)</option>
+                                        <option>Grand (For hall/auditorium)</option>
+                                        <option>Digital (For practice rooms)</option>
+                                        <option>No Preference</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Contact Teacher*</label>
+                                    <input type="text" name="teacher-name" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-amber-500 outline-none text-sm bg-slate-50 focus:bg-white">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Background &amp; Impact*</label>
+                                <textarea name="background" rows="4" placeholder="Describe your music program and how a piano will help students." class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-amber-500 outline-none text-sm bg-slate-50 focus:bg-white"></textarea>
+                            </div>
+                            <label class="flex items-start gap-3 text-sm text-slate-700 cursor-pointer border border-amber-100 bg-amber-50/50 rounded-xl p-4">
+                                <input type="checkbox" name="commitment" required class="mt-1 rounded text-amber-600 focus:ring-amber-500">
+                                <span>We commit to regular professional tuning and maintenance for the donated instrument.</span>
+                            </label>
+                            <button type="button" class="js-submit w-full btn-gold py-3.5 rounded-xl font-bold mt-2 shadow-md">Submit Application</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div id="form-video" class="p-8 hidden">
+                    <p class="text-xs text-amber-600 font-bold bg-amber-50 border border-amber-100 p-3 rounded-lg mb-6">
+                        Our <strong>100% free</strong> recording service is limited to schools in CT, NJ, and NY. Submissions are routed through our contact desk—please include accurate email so we can reply.
+                    </p>
+                    <form id="video-recording-form" class="space-y-5">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">School Name*</label>
+                                <input type="text" name="video-school" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-amber-500 outline-none text-sm bg-slate-50 focus:bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Contact Person*</label>
+                                <input type="text" name="video-contact" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-amber-500 outline-none text-sm bg-slate-50 focus:bg-white">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Contact Email*</label>
+                            <input type="email" name="video-email" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-amber-500 outline-none text-sm bg-slate-50 focus:bg-white">
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">State*</label>
+                                <select name="video-state" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-amber-500 outline-none text-sm bg-slate-50 focus:bg-white">
+                                    <option>New York (NY)</option>
+                                    <option>New Jersey (NJ)</option>
+                                    <option>Connecticut (CT)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Concert Date*</label>
+                                <input type="date" name="video-date" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-amber-500 outline-none text-sm text-slate-700 bg-slate-50 focus:bg-white">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Event Details*</label>
+                            <textarea name="video-details" rows="3" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-amber-500 outline-none text-sm bg-slate-50 focus:bg-white"></textarea>
+                        </div>
+                        <button type="button" class="js-submit w-full btn-gold py-3.5 rounded-xl font-bold mt-2 shadow-md">Request Free Recording</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-white border-t border-slate-200 py-10 text-center">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <span class="text-xl font-bold tracking-tight text-slate-900 mb-2 block serif-font">Clavis<span class="text-amber-600 italic font-medium">Nova</span></span>
+            <p class="text-xs text-slate-500 mb-4 max-w-xs mx-auto">Reviving instruments. Capturing brilliance.</p>
+            <p class="text-[10px] text-slate-400 font-bold tracking-widest uppercase">
+                &copy; 2026 ClavisNova. A 501(c)(3) Non-Profit.
+            </p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

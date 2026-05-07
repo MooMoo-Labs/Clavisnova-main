@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test</title>
+</head>
+<body>
+    <h1>API Test</h1>
+    <button onclick="testAPI()">Test Registration API</button>
+    <button onclick="testHealth()">Test Health API</button>
+    <div id="result"></div>
+
+    <script>
+        const API_BASE = 'https://clavisnova.onrender.com';
+
+        async function submitFormData(endpoint, data) {
+            try {
+                const url = endpoint.startsWith('http') ? endpoint : `${API_BASE}${endpoint}`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                result.success = response.ok;
+                return result;
+            } catch (error) {
+                console.error('Network error:', error);
+                throw new Error('Network connection failed');
+            }
+        }
+
+        async function testAPI() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing API...';
+
+            try {
+                const response = await submitFormData('/api/registration', {
+                    manufacturer: 'Test Brand',
+                    model: 'Test Model',
+                    serial: 'TEST123',
+                    year: 2020,
+                    height: 'Upright',
+                    finish: 'Polished',
+                    color_wood: 'Black',
+                    city_state: 'Test City, State',
+                    access: 'Good access'
+                });
+
+                resultDiv.innerHTML = `<pre>${JSON.stringify(response, null, 2)}</pre>`;
+                console.log('API Response:', response);
+            } catch (error) {
+                resultDiv.innerHTML = `Error: ${error.message}`;
+                console.error('API Error:', error);
+            }
+        }
+
+        async function testHealth() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing Health API...';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/health`);
+                const data = await response.json();
+                resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                console.log('Health Response:', data);
+            } catch (error) {
+                resultDiv.innerHTML = `Error: ${error.message}`;
+                console.error('Health API Error:', error);
+            }
+        }
+    </script>
+</body>
+</html>
