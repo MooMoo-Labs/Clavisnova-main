@@ -1,100 +1,287 @@
-/** Scroll to top after successful submission (single-page layout). */
-function scrollAfterSuccess() {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    if (typeof switchTab === 'function') {
-        switchTab('piano', null, false);
-    }
-}
-
-/** Legacy hook: older markup used section views; index is now one scroll page. */
+// Page switching functionality for single-page app
 function showSection(id) {
-    if (id === 'home') {
-        scrollAfterSuccess();
-        return;
-    }
+    console.log('showSection called with id:', id);
+    const views = document.querySelectorAll('.section-view');
+    views.forEach(v => v.classList.remove('active'));
+
     const target = document.getElementById(id + '-view');
+    console.log('Target element found:', !!target);
     if (target) {
-        document.querySelectorAll('.section-view').forEach(v => v.classList.remove('active'));
         target.classList.add('active');
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        setTimeout(() => initForms(), 100);
-    }
-}
 
-/** Contact section tabs + optional piano inquiry preset. scrollToContact: scroll #contact into view (hero CTAs). */
-function switchTab(tabId, subAction, scrollToContact) {
-    const btnPiano = document.getElementById('tab-piano');
-    const btnVideo = document.getElementById('tab-video');
-    const formPiano = document.getElementById('form-piano');
-    const formVideo = document.getElementById('form-video');
-    const pianoSelect = document.getElementById('piano-inquiry-type');
-    if (!btnPiano || !btnVideo || !formPiano || !formVideo) return;
-
-    btnPiano.className = 'flex-1 py-4 text-sm font-bold text-slate-500 hover:text-slate-800 transition bg-transparent';
-    btnVideo.className = 'flex-1 py-4 text-sm font-bold text-slate-500 hover:text-slate-800 transition bg-transparent';
-
-    formPiano.classList.add('hidden');
-    formVideo.classList.add('hidden');
-
-    if (tabId === 'piano') {
-        btnPiano.className = 'flex-1 py-4 text-sm font-bold text-amber-600 border-b-2 border-amber-600 transition bg-white';
-        formPiano.classList.remove('hidden');
-        if (pianoSelect) {
-            if (subAction === 'donate') pianoSelect.value = 'donate';
-            if (subAction === 'request') pianoSelect.value = 'request';
-            syncPianoInquiryUI();
-        }
+        // Re-bind form events after section change
+        console.log('Scheduling form initialization...');
+        setTimeout(() => {
+            console.log('Initializing forms after section change...');
+            initForms();
+        }, 100);
     } else {
-        btnVideo.className = 'flex-1 py-4 text-sm font-bold text-amber-600 border-b-2 border-amber-600 transition bg-white';
-        formVideo.classList.remove('hidden');
-    }
-
-    if (scrollToContact) {
-        const c = document.getElementById('contact');
-        if (c) c.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        console.log('Target element not found for id:', id + '-view');
     }
 }
 
-function syncPianoInquiryUI() {
-    const sel = document.getElementById('piano-inquiry-type');
-    const wDonate = document.getElementById('piano-donate-wrap');
-    const wReq = document.getElementById('piano-request-wrap');
-    if (!sel || !wDonate || !wReq) return;
-    if (sel.value === 'donate') {
-        wDonate.classList.remove('hidden');
-        wReq.classList.add('hidden');
-    } else {
-        wDonate.classList.add('hidden');
-        wReq.classList.remove('hidden');
-    }
-}
-
-window.switchTab = switchTab;
-
-// Piano inquiry dropdown + Enter submits via .js-submit (delegated handler)
+// Form handling with validation and API integration
 function initForms() {
-    const sel = document.getElementById('piano-inquiry-type');
-    if (sel && !sel.dataset.bound) {
-        sel.addEventListener('change', syncPianoInquiryUI);
-        sel.dataset.bound = 'true';
+    console.log('Initializing forms...');
+
+    // Check if donor-form-view is visible
+    const donorFormView = document.getElementById('donor-form-view');
+    console.log('donor-form-view element found:', !!donorFormView);
+    console.log('donor-form-view is active:', donorFormView ? donorFormView.classList.contains('active') : 'N/A');
+
+    // Remove existing event listeners to prevent duplicates
+    const existingDonorForm = document.querySelector('#donor-form-view form');
+    console.log('Existing donor form found:', !!existingDonorForm);
+    if (existingDonorForm) {
+        console.log('Removing existing donor form event listeners...');
+        const newDonorForm = existingDonorForm.cloneNode(true);
+        existingDonorForm.parentNode.replaceChild(newDonorForm, existingDonorForm);
     }
-    syncPianoInquiryUI();
 
-    ['piano-form-donate', 'piano-form-request', 'video-recording-form'].forEach(function(fid) {
-        const f = document.getElementById(fid);
-        if (f && !f.dataset.enterSubmit) {
-            f.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const btn = f.querySelector('.js-submit');
-                if (btn) btn.click();
-            });
-            f.dataset.enterSubmit = '1';
+    // Also remove existing event listeners for school form to avoid duplicate submits
+    const existingSchoolForm = document.querySelector('#school-form-view form');
+    console.log('Existing school form found:', !!existingSchoolForm);
+    if (existingSchoolForm) {
+        console.log('Removing existing school form event listeners...');
+        const newSchoolForm = existingSchoolForm.cloneNode(true);
+        existingSchoolForm.parentNode.replaceChild(newSchoolForm, existingSchoolForm);
+    }
+
+    // Donor form (Piano Registration) - calls /api/registration
+    const donorForm = document.querySelector('#donor-form-view form');
+    console.log('Donor form found after cleanup:', !!donorForm);
+
+    if (donorForm) {
+        if (!donorForm.dataset.listenerAttached) {
+            console.log('Binding submit event to donor form (robust)');
+
+            // Helper to find the submit button: prefer explicit .js-submit, fall back to type selectors
+            const findSubmitButton = (formEl) => {
+                return formEl.querySelector('.js-submit') ||
+                    formEl.querySelector('button[type="submit"]') ||
+                    formEl.querySelector('button[type="button"], button:not([type])');
+            };
+
+            // Shared submit handler function
+            const donorSubmitHandler = async function(e) {
+                if (e && e.preventDefault) e.preventDefault();
+                const form = donorForm; // reference the current donor form
+                console.log('Submit event triggered (shared handler)');
+
+                console.log('Form submitted, validating...');
+                if (!validateDonorForm(form)) {
+                    console.log('Form validation failed');
+                    return;
+                }
+                console.log('Form validation passed');
+
+                // Disable submit button to prevent double submission
+                const submitBtn = findSubmitButton(form);
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<span class="spinner"></span> Submitting...';
+
+                    // Add spinner styles if not already present
+                    if (!document.querySelector('#spinner-styles')) {
+                        const style = document.createElement('style');
+                        style.id = 'spinner-styles';
+                        style.textContent = `
+                            .spinner {
+                                display: inline-block;
+                                width: 16px;
+                                height: 16px;
+                                border: 2px solid #ffffff;
+                                border-radius: 50%;
+                                border-top-color: transparent;
+                                animation: spin 1s ease-in-out infinite;
+                                margin-right: 8px;
+                            }
+                            @keyframes spin {
+                                to { transform: rotate(360deg); }
+                            }
+                        `;
+                        document.head.appendChild(style);
+                    }
+                }
+
+                // Map form data to backend expected fields
+                const formDataObj = new FormData(form);
+                const data = {
+                    manufacturer: formDataObj.get('brand') || '', // Manufacturer
+                    model: formDataObj.get('model') || '', // Model
+                    serial: formDataObj.get('serial') || '', // Serial Number
+                    year: parseInt(formDataObj.get('year')) || 2020, // Year
+                    height: formDataObj.get('type') || '', // Piano Type (Upright/Grand/Digital)
+                    finish: formDataObj.get('condition') || '', // Condition
+                    color_wood: formDataObj.get('color_wood') || '', // Color/Wood details
+                    city_state: formDataObj.get('city') || '', // City & State
+                    access: formDataObj.get('access') || '' // Access Details
+                };
+
+                // Submit to backend
+                console.log('Submitting data:', data);
+                try {
+                    const response = await submitFormData('/api/registration', data);
+                    console.log('🎉 Response received:', response);
+                    if (response.id && response.message) {
+                        showSuccessModal('Thank you for registering your piano! A specialist will contact you within 48 hours for assessment.');
+                        form.reset();
+                        setTimeout(() => {
+                            const modal = document.querySelector('.success-modal-overlay');
+                            if (modal) modal.remove();
+                            showSection('home');
+                        }, 5000);
+                    } else {
+                        console.log('❌ Error response:', response);
+                        showFormMessage(form, response.message || 'Submission failed. Please try again.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error submitting donor form:', error);
+
+                    let errorMessage = 'An unexpected error occurred. Please try again.';
+
+                    if (error.message.includes('timed out')) {
+                        errorMessage = 'Request timed out. The server may be busy. Please try again in a moment.';
+                    } else if (error.message.includes('Network connection failed')) {
+                        errorMessage = 'Network connection failed. Please check your internet connection and try again.';
+                    } else if (error.message.includes('Request failed')) {
+                        errorMessage = 'Server error. Please try again later.';
+                    }
+
+                    showFormMessage(form, errorMessage, 'error');
+                } finally {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = 'Submit Registry';
+                    }
+                }
+            };
+
+            // Bind submit event
+            donorForm.addEventListener('submit', donorSubmitHandler);
+
+            // Also bind click on submit-like button to ensure JS path is used even if browser triggers default submit
+            const submitBtnEl = findSubmitButton(donorForm);
+            if (submitBtnEl) {
+                submitBtnEl.addEventListener('click', function(ev) {
+                    ev.preventDefault();
+                    donorSubmitHandler();
+                });
+            }
+
+            donorForm.dataset.listenerAttached = 'true';
         }
-    });
+    }
 
-    const yearInput = document.querySelector('#piano-form-donate input[name="year"]');
-    if (yearInput) {
-        yearInput.setAttribute('max', String(new Date().getFullYear()));
+    // School form (Requirements) - calls /api/requirements
+    const schoolForm = document.querySelector('#school-form-view form');
+    if (schoolForm) {
+        if (!schoolForm.dataset.listenerAttached) {
+            schoolForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            if (!validateSchoolForm(this)) return;
+
+            // Disable submit button to prevent double submission
+            const submitBtn = (function(formEl){
+                return formEl.querySelector('button[type="submit"], button[type="button"], button:not([type])');
+            })(this);
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+
+            // Map form data to backend expected fields (info1-info6)
+            const formData = new FormData(this);
+            const data = {
+                info1: formData.get('school-name') || '', // School Full Name
+                info2: formData.get('current-pianos') || '', // Current Number of Pianos
+                info3: formData.get('preferred-type') || '', // Preferred Piano Type
+                info4: formData.get('teacher-name') || '', // Contact Teacher Name
+                info5: formData.get('background') || '', // Background & Impact Statement
+                info6: 'Maintenance commitment accepted' // Checkbox commitment
+            };
+
+            // Submit to backend
+            submitFormData('/api/requirements', data)
+                .then(response => {
+                    if (response.success !== false) { // Backend returns success in response
+                        // Show modal and wait for 5s countdown before redirecting (keeps in sync with modal)
+                        showSuccessModal('Submission successful');
+                        this.reset();
+                        setTimeout(() => {
+                            const modal = document.querySelector('.success-modal-overlay');
+                            if (modal) modal.remove();
+                            showSection('home');
+                        }, 5000);
+                    } else {
+                        showFormMessage(this, response.message || 'Submission failed. Please try again.', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error submitting school form:', error);
+                    showFormMessage(this, 'Network error. Please check your connection and try again.', 'error');
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Submit Application';
+                });
+            });
+            schoolForm.dataset.listenerAttached = 'true';
+        }
+    }
+
+    // Contact form (simple client-side handling)
+    const contactForm = document.querySelector('#contact-view form');
+    if (contactForm) {
+        if (!contactForm.dataset.listenerAttached) {
+            contactForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const form = this;
+            if (!validateContactForm(form)) return;
+
+            const submitBtn = (function(formEl){
+                return formEl.querySelector('button[type="submit"], button[type="button"], button:not([type])');
+            })(form);
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
+            }
+
+            const fd = new FormData(form);
+            const payload = {
+                name: fd.get('name') || '',
+                email: fd.get('email') || '',
+                message: fd.get('message') || ''
+            };
+
+            submitFormData('/api/contact', payload)
+                .then(res => {
+                    if (res && (res.id || res.message)) {
+                        // show modal and redirect after 5s
+                        showSuccessModal('Submission successful');
+                        form.reset();
+                        setTimeout(() => {
+                            const modal = document.querySelector('.success-modal-overlay');
+                            if (modal) modal.remove();
+                            showSection('home');
+                        }, 5000);
+                    } else {
+                        showFormMessage(form, res.message || 'Submission failed. Please try again.', 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error submitting contact form:', err);
+                    showFormMessage(form, 'Network error. Please try again.', 'error');
+                })
+                .finally(() => {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Send Message';
+                    }
+                });
+            });
+            contactForm.dataset.listenerAttached = 'true';
+        }
     }
 }
 
@@ -213,39 +400,6 @@ function validateContactForm(form) {
         }
     }
 
-    return isValid;
-}
-
-/** Free recording inquiry → same /api/contact contract with structured message body. */
-function validateRecordingForm(form) {
-    let isValid = true;
-    const pairs = [
-        ['video-school', 'School name is required'],
-        ['video-contact', 'Contact person is required'],
-        ['video-email', 'Email is required'],
-        ['video-state', 'State is required'],
-        ['video-date', 'Concert date is required'],
-        ['video-details', 'Event details are required']
-    ];
-    pairs.forEach(function([name, msg]) {
-        const field = form.querySelector('[name="' + name + '"]');
-        if (field && !String(field.value || '').trim()) {
-            showFieldError(field, msg);
-            isValid = false;
-        } else if (field) {
-            clearFieldError(field);
-        }
-    });
-    const emailField = form.querySelector('input[name="video-email"]');
-    if (emailField && String(emailField.value || '').trim()) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(emailField.value.trim())) {
-            showFieldError(emailField, 'Please enter a valid email address');
-            isValid = false;
-        } else {
-            clearFieldError(emailField);
-        }
-    }
     return isValid;
 }
 
@@ -481,16 +635,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 100);
 });
 
-// Smooth scrolling for anchor links (clicks on child nodes inside <a>)
+// Smooth scrolling for anchor links (if any)
 document.addEventListener('click', function(e) {
-    const a = e.target.closest && e.target.closest('a[href^="#"]');
-    if (!a || !a.getAttribute('href') || a.getAttribute('href') === '#') return;
-    const href = a.getAttribute('href');
-    if (href.length < 2) return;
-    const target = document.querySelector(href);
-    if (target) {
+    if (e.target.matches('a[href^="#"]')) {
         e.preventDefault();
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const target = document.querySelector(e.target.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth' });
+        }
     }
 });
 
@@ -557,11 +709,12 @@ if (!window.__jsSubmitHandlerInstalled) {
             btn.dataset.processing = 'true';
 
             // Determine which form type and validate
-            if (form.id === 'piano-form-donate') {
+            if (form.closest('#donor-form-view')) {
                 if (!validateDonorForm(form)) {
                     btn.dataset.processing = 'false';
                     return;
                 }
+                // Build data and submit (same mapping as donorSubmitHandler)
                 const fd = new FormData(form);
                 const data = {
                     manufacturer: fd.get('brand') || '',
@@ -585,7 +738,7 @@ if (!window.__jsSubmitHandlerInstalled) {
                         setTimeout(() => {
                             const modal = document.querySelector('.success-modal-overlay');
                             if (modal) modal.remove();
-                            scrollAfterSuccess();
+                            showSection('home');
                         }, 5000);
                     } else {
                         showFormMessage(form, res.message || 'Submission failed. Please try again.', 'error');
@@ -598,7 +751,7 @@ if (!window.__jsSubmitHandlerInstalled) {
                     btn.textContent = 'Submit Registry';
                     btn.dataset.processing = 'false';
                 }
-            } else if (form.id === 'piano-form-request') {
+            } else if (form.closest('#school-form-view')) {
                 if (!validateSchoolForm(form)) {
                     btn.dataset.processing = 'false';
                     return;
@@ -622,7 +775,7 @@ if (!window.__jsSubmitHandlerInstalled) {
                         setTimeout(() => {
                             const modal = document.querySelector('.success-modal-overlay');
                             if (modal) modal.remove();
-                            scrollAfterSuccess();
+                            showSection('home');
                         }, 5000);
                     } else {
                         showFormMessage(form, res.message || 'Submission failed. Please try again.', 'error');
@@ -633,55 +786,6 @@ if (!window.__jsSubmitHandlerInstalled) {
                 } finally {
                     btn.disabled = false;
                     btn.textContent = 'Submit Application';
-                    btn.dataset.processing = 'false';
-                }
-            } else if (form.id === 'video-recording-form') {
-                if (!validateRecordingForm(form)) {
-                    btn.dataset.processing = 'false';
-                    return;
-                }
-                const fd = new FormData(form);
-                const school = (fd.get('video-school') || '').trim();
-                const contactName = (fd.get('video-contact') || '').trim();
-                const email = (fd.get('video-email') || '').trim();
-                const state = (fd.get('video-state') || '').trim();
-                const date = (fd.get('video-date') || '').trim();
-                const details = (fd.get('video-details') || '').trim();
-                const message = [
-                    '[Free Stage Recording Request]',
-                    'School: ' + school,
-                    'State: ' + state,
-                    'Concert date: ' + date,
-                    '',
-                    'Details:',
-                    details
-                ].join('\n');
-
-                btn.disabled = true;
-                btn.textContent = 'Submitting...';
-                try {
-                    const res = await submitFormData('/api/contact', {
-                        name: contactName,
-                        email: email,
-                        message: message
-                    });
-                    if (res && (res.id || res.message)) {
-                        showSuccessModal('Your recording request was sent. We will reply by email.');
-                        form.reset();
-                        setTimeout(() => {
-                            const modal = document.querySelector('.success-modal-overlay');
-                            if (modal) modal.remove();
-                            scrollAfterSuccess();
-                        }, 5000);
-                    } else {
-                        showFormMessage(form, res.message || 'Submission failed. Please try again.', 'error');
-                    }
-                } catch (err) {
-                    console.error('Error submitting recording request:', err);
-                    showFormMessage(form, 'Network error. Please check your connection and try again.', 'error');
-                } finally {
-                    btn.disabled = false;
-                    btn.textContent = 'Request Free Recording';
                     btn.dataset.processing = 'false';
                 }
             } else {
@@ -695,4 +799,3 @@ if (!window.__jsSubmitHandlerInstalled) {
         }
     }, false);
 }
-
