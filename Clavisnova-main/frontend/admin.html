@@ -376,9 +376,8 @@
     </main>
 
     <script>
-        // API base used by admin page; points to backend service
-        // Expose as window.API_BASE to avoid duplicate const declarations when script.js also defines API_BASE.
-        window.API_BASE = window.API_BASE || 'https://clavisnova.onrender.com';
+        // API base used by admin page; same-origin Cloudflare Pages Functions by default.
+        const API_BASE = window.API_BASE || '';
 
     </script>
     <script>

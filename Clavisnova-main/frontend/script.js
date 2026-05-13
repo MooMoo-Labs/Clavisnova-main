@@ -288,8 +288,8 @@ function initForms() {
 // Test if JavaScript is working
 console.log('🎹 Script loaded successfully!');
 
-// API base for backend requests - change to your API domain (Render)
-const API_BASE = 'https://clavisnova.onrender.com';
+// API base for backend requests - use same-origin Cloudflare Pages functions by default
+const API_BASE = '';
 
 // Test function calls
 function testJavaScript() {
