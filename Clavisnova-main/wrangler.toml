@@ -1,0 +1,10 @@
+name = "clavisnova-main"
+main = "src/worker.js"
+compatibility_date = "2026-05-13"
+compatibility_flags = ["nodejs_compat"]
+assets = { directory = "frontend" }
+
+[vars]
+# Set these in Cloudflare dashboard for production, or use wrangler secret put.
+# SUPABASE_URL = "https://your-project.supabase.co"
+# SUPABASE_SERVICE_ROLE_KEY = "your-service-role-key"
